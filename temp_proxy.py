@@ -4,3 +4,33 @@ in pymc"""
 
 from pylab import *
 from pymc import *
+
+
+# load data
+data = csv2rec('BUGS_data.txt', delimiter='\t')
+
+
+# define priors
+beta = Normal('beta', mu=zeros(13), tau=.001)
+sigma = Uniform('sigma', lower=0., upper=100.)
+
+
+# define predictions
+pc = array([data['pc%d'%(ii+1)] for ii in range(10)]) # copy pc data into an array for speed & convenience
+@deterministic
+def mu(beta=beta, temp1=data.lagy1, temp2=data.lagy2, pc=pc):
+    return beta[0] + beta[1]*temp1 + beta[2]*temp2 + dot(beta[3:], pc)
+
+
+# define likelihood
+@observed
+@stochastic
+def y(value=data.y, mu=mu, sigma=sigma):
+    return normal_like(value, mu, sigma**-2.)
+
+
+# generate MCMC samples
+vars = [beta, sigma, mu, y]
+mc = MCMC(vars)
+mc.sample(iter=20000, thin=10, burn=10000, verbose=1) # I like to burn-in for 50% of the total samples
+
