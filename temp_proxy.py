@@ -61,6 +61,6 @@ legend(loc='upper left')
 
 # scatter residuals
 figure()
-scatter(data.y, quantiles[50]-data.y)
-xlabel('temp_t')
+scatter(quantiles[50], quantiles[50]-data.y)
+xlabel('temp_t^predicted')
 ylabel('residual_t')
